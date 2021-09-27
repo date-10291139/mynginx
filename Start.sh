@@ -31,6 +31,25 @@ server {
 		}
 	}
 
+server {
+		listen  ${PORT};
+		server_name  mynginx-production.up.railway.app;
+
+		proxy_set_header X-Forwarded-Host $host;
+		proxy_set_header X-Forwarded-Server $host;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+		location / {
+			proxy_pass http://127.0.0.1:8080;
+			
+			proxy_connect_timeout 600;
+			proxy_read_timeout 600;
+			proxy_http_version 1.1;
+			proxy_set_header Upgrade $http_upgrade;
+			proxy_set_header Connection "upgrade";
+		}
+	}
+
 
 #ssh
 server {
@@ -73,29 +92,9 @@ server {
 		}
 	}
 
-
-#xray
-server {
-		listen  ${PORT};
-		server_name  rai-vl.cn2hk.ml;
-
-		proxy_set_header X-Forwarded-Host $host;
-		proxy_set_header X-Forwarded-Server $host;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-		location / {
-			proxy_pass http://127.0.0.1:8888;
-			
-			proxy_connect_timeout 600;
-			proxy_read_timeout 600;
-			proxy_http_version 1.1;
-			proxy_set_header Upgrade $http_upgrade;
-			proxy_set_header Connection "upgrade";
-		}
-	}
 EOF
 
+wstunnel -s 0.0.0.0:8080 >/dev/null 2>&1 &
 service nginx stop
 service nginx start
-wstunnel -s 0.0.0.0:8080 >/dev/null 2>&1 &
 sleep -d 123456
